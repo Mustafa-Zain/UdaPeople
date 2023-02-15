@@ -35,12 +35,8 @@ jobs:
           name: Back-end build
           command: |
              # Your code here
-             pwd
-             node -v
-             cd frontend
+             cd backend
              npm install
-             echo "BUILDINGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG"
-             npx browserslist@latest --update-db
              npm run build
              
       - save_cache:
