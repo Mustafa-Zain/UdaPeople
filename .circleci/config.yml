@@ -11,12 +11,13 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-          keys: "f5:6b:6e:58:30:42:53:4d:e5:61:df:9c:b0:6d:2d:6d"
+          keys: [frontend-build]
       - run:
           name: Build front-end
           command: |
             # Your code here
             cd frontend
+            pwd
             npm install
             npm run build
       - save_cache:
@@ -29,11 +30,12 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-          keys: "f5:6b:6e:58:30:42:53:4d:e5:61:df:9c:b0:6d:2d:6d"
+          keys: [backend-build]
       - run:
           name: Back-end build
           command: |
              # Your code here
+             pwd
              cd frontend
              npm install
              npm run build
