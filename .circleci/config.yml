@@ -311,6 +311,58 @@ jobs:
       # Here's where you will add some code to rollback on failure  
 
 
+
+  smoke-test:
+    docker:
+      - image: circleci/node:13.8.0
+    steps:
+      - checkout
+      - run:
+          name: Install dependencies
+          command: |
+            sudo apt install  tar gzip    unzip
+            #pip install pip  --upgrade 
+            #pip install  awscli 
+            #pip install ansible  
+            curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+            unzip awscliv2.zip
+            sudo ./aws/install
+            aws --version
+      - run:
+          name: Get backend url
+          command: |
+            # Fetch and prepare the BACKEND_IP env var
+            export BACKEND_IP=$(aws ec2 describe-instances --query 'Reservations[*].Instances[*].PublicIpAddress'   --filters "Name=tag:project,Values=udapeople" --output text)
+            export API_URL="http://${BACKEND_IP}:3030"
+            echo "${API_URL}"
+
+      - run:
+          name: Backend smoke test.
+          command: |
+            if curl "${API_URL}/api/status" | grep "ok"
+            then
+                return 0
+            else
+                return 1
+            fi
+      - run:
+          name: Frontend smoke test.
+          command: |
+            #aws s3 cp dist s3://udapeople-4273fc1 --recursive
+            URL="http://udapeople-4273fc1.s3-website-us-east-1.amazonaws.com/#/employees"            
+
+            #URL="http://udapeople-${CIRCLE_WORKFLOW_ID:0:7}.s3-website-us-east-1.amazonaws.com/#/employees"            
+            echo ${URL} 
+            if curl -s ${URL} | grep "Welcome"
+            then
+                # Change this to 0 after the job fails
+              return 1
+            else
+              return 1
+            fi
+      # Here's where you will add some code to rollback on failure  
+
+
 # Invoke jobs via workflows
 # See: https://circleci.com/docs/2.0/configuration-reference/#workflows
 workflows:
@@ -331,7 +383,9 @@ workflows:
     #      requires: [deploy-infrastructure]
     #  - run-migrations
     #  - deploy-frontend
+    #  - smoke-test
       - deploy-backend    
+      - smoke-test
 
 
 
