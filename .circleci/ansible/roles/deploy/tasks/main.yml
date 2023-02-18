@@ -53,8 +53,9 @@
     remote_src: True
 
 - name: install
-  shell:
-    command: /home/ubuntu/web npm install
+  npm:
+    name: install
+    path: /home/ubuntu/web
 
 - name: stop
   shell:
