@@ -170,10 +170,11 @@ jobs:
       - run:
           name: Install Ansible
           command: |
+            apt install  tar gzip   
             # Install Ansible
             pip install pip  --upgrade 
-            pip install tar gzip ansible awscli  
-              
+            pip install ansible awscli  
+                 
       - run:
           name: Configure server
           command: |
