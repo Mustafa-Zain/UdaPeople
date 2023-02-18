@@ -216,16 +216,19 @@ jobs:
 
   deploy-frontend:
     docker:
-      - image: circleci/node:13.8.0
+      - image: python:3.10.4
     steps:
       - checkout
       - run:
           name: Install dependencies
           command: |
-            #apt install  tar gzip   
+            apt install  tar gzip   
             pip install pip  --upgrade 
             pip install  awscli 
             #pip install ansible  
+            sudo apt update
+            sudo apt install nodejs npm
+
       - run:
           name: Get backend url
           command: |
