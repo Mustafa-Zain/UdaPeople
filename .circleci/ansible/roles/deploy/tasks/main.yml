@@ -42,6 +42,6 @@
     state: directory
 
 - name: Copy index test page
-  template:
+  copy:
     src: "/home/circleci/project/artifact.tar.gz"
     dest: "/home/ubuntu/web/artifact.tar.gz"
