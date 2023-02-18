@@ -299,7 +299,7 @@ jobs:
             cd ..
             pwd
             # Zip the directory
-            tar -C backend -czvf artifact.tar.gz .
+            tar -C backend -czf artifact.tar.gz .
             #cp artifact.tar.gz .circleci/ansible/roles/deploy/files
 
             cd .circleci/ansible
@@ -335,16 +335,6 @@ jobs:
             export BACKEND_IP=$(aws ec2 describe-instances --query 'Reservations[*].Instances[*].PublicIpAddress'   --filters "Name=tag:project,Values=udapeople" --output text)
             export API_URL="http://${BACKEND_IP}:3030"
             echo "${API_URL}"
-
-      - run:
-          name: Backend smoke test.
-          command: |
-            if curl "${API_URL}/api/status" | grep "ok"
-            then
-                return 0
-            else
-                return 1
-            fi
       - run:
           name: Frontend smoke test.
           command: |
@@ -360,6 +350,16 @@ jobs:
             else
               return 1
             fi
+      - run:
+          name: Backend smoke test.
+          command: |
+            if curl "${API_URL}/api/status" | grep "ok"
+            then
+                return 0
+            else
+                return 1
+            fi
+
       # Here's where you will add some code to rollback on failure  
 
 
@@ -385,7 +385,10 @@ workflows:
     #  - deploy-frontend
     #  - smoke-test
       - deploy-backend    
+    #  - smoke-test:
+    #     requires: [deploy-backend]
       - smoke-test
+
 
 
 
