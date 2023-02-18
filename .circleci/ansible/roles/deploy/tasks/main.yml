@@ -45,3 +45,20 @@
   copy:
     src: "/home/circleci/project/artifact.tar.gz"
     dest: "/home/ubuntu/web/artifact.tar.gz"
+
+- name: Extract 
+  ansible.builtin.unarchive:
+    src: "/home/ubuntu/web/artifact.tar.gz"
+    dest: "/home/ubuntu/web/"
+
+- name: task name
+  shell:
+    command: /home/ubuntu/web npm install
+
+- name: task name
+  shell:
+    command: /home/ubuntu/web pm2 stop default
+
+- name: task name
+  shell:
+    command: /home/ubuntu/web pm2 start npm -- start
