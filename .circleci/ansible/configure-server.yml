@@ -23,10 +23,8 @@
       become: yes
       apt:
         name: python3
-        
-    - name : validate the python3 installation
-      debug: msg="Installation of python3 is Successfull"
-      when: aptinstall is changed
+
+
 
   # Get the environment variables from CircleCI and add to the EC2 instance
   environment:
