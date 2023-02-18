@@ -282,6 +282,11 @@ jobs:
             unzip awscliv2.zip
             sudo ./aws/install
             aws --version
+            sudo apt update
+            sudo apt install python3-pip
+            pip install --user ansible
+            python3 -m pip -V
+            ansible --version
       - run:
           name: Deploy backend
           command: |
