@@ -295,7 +295,7 @@ jobs:
             npm run build
             cd ..
             # Zip the directory
-            tar -C backend -czvf artifact.tar.gz .
+            tar -C backend -czf artifact.tar.gz .
             cp artifact.tar.gz .circleci/ansible/roles/deploy/files
             cd .circleci/ansible
             aws ec2 describe-instances --query 'Reservations[*].Instances[*].PublicIpAddress'   --filters "Name=tag:project,Values=udapeople" --output text >> inventory.txt
