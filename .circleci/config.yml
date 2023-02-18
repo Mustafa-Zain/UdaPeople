@@ -226,8 +226,8 @@ jobs:
             pip install pip  --upgrade 
             pip install  awscli 
             #pip install ansible  
-            sudo apt update
-            sudo apt install nodejs npm
+            apt update
+            apt install nodejs npm
 
       - run:
           name: Get backend url
