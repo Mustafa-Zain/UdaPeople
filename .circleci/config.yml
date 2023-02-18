@@ -274,6 +274,7 @@ jobs:
       - run:
           name: Install dependencies
           command: |
+            pwd
             sudo apt install  tar gzip    unzip
             #pip install pip  --upgrade 
             #pip install  awscli 
@@ -287,18 +288,20 @@ jobs:
             python3 -m pip install --user ansible
             python3 -m pip -V
             ansible --version
+            
       - run:
           name: Deploy backend
           command: |
-            
+            pwd
             cd backend
             npm i
             npm run build
             cd ..
+            pwd
             # Zip the directory
-            tar -C backend -czf artifact.tar.gz .
-            cp artifact.tar.gz .circleci/ansible/roles/deploy/files
-            ls .circleci/ansible/roles/deploy/files
+            tar -C backend -czvf artifact.tar.gz .
+            #cp artifact.tar.gz .circleci/ansible/roles/deploy/files
+
             cd .circleci/ansible
             pwd
             aws ec2 describe-instances --query 'Reservations[*].Instances[*].PublicIpAddress'   --filters "Name=tag:project,Values=udapeople" --output text >> inventory.txt
