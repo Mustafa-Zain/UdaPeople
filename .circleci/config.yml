@@ -226,7 +226,7 @@ jobs:
             pip install pip  --upgrade 
             pip install  awscli 
             #pip install ansible  
-            apt update
+            #apt update
             apt install nodejs npm
 
       - run:
