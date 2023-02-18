@@ -38,10 +38,10 @@
 
 - name: Creates directory
   file:
-    path: ~/web
+    path: /home/ubuntu
     state: directory
 
 - name: Copy index test page
   template:
     src: "files/artifact.tar.gz"
-    dest: "~/web/artifact.tar.gz"
+    dest: "/home/ubuntu/artifact.tar.gz"
