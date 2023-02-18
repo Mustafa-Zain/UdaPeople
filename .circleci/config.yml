@@ -155,6 +155,35 @@ jobs:
       # Here's where you will add some code to rollback on failure     
 
 
+
+
+  configure-infrastructure:
+    docker:
+      - image: python:3.10.4
+    steps:
+      - checkout
+      - add_ssh_keys:
+          fingerprints: ["f5:6b:6e:58:30:42:53:4d:e5:61:df:9c:b0:6d:2d:6d"] # You can get this ID in the section where you registered the SSH Key
+      - attach_workspace:
+          # Must be absolute path or relative path from working_directory
+          at: ~/
+      - run:
+          name: Install Ansible
+          command: |
+            # Install Ansible
+            pip install pip  --upgrade 
+            pip install ansible awscli  
+            yum install -y tar gzip        
+      - run:
+          name: Configure server
+          command: |
+            cd .circleci/ansible/
+            '54.144.155.105' >> inventory.txt
+            cat inventory.txt
+            ansible-playbook -i inventory.txt configure-server.yml
+      # Here's where you will add some code to rollback on failure      
+
+
 # Invoke jobs via workflows
 # See: https://circleci.com/docs/2.0/configuration-reference/#workflows
 workflows:
@@ -170,4 +199,6 @@ workflows:
     #     requires: [build-frontend]
     # - scan-backend:
     #     requires: [build-backend]
-      - deploy-infrastructure
+    #  - deploy-infrastructure
+      - configure-infrastructure
+   #     requires: [deploy-infrastructure]
