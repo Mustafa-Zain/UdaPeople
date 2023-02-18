@@ -172,8 +172,8 @@ jobs:
           command: |
             # Install Ansible
             pip install pip  --upgrade 
-            pip install ansible awscli  
-            yum install -y tar gzip        
+            pip install tar gzip ansible awscli  
+              
       - run:
           name: Configure server
           command: |
