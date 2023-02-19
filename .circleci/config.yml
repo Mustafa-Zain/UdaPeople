@@ -4,6 +4,48 @@ version: 2.1
 
 orbs:
   slack: circleci/slack@4.1
+
+
+commands:
+  # Exercise - Rollback
+  destroy_environment:
+    steps:
+      - run: # Install the AWS CLI if it is not already included in the docker image
+          name: Install awscli
+          when: on_fail
+          command: pip install awscli
+      - run:
+          name: Destroy environment
+          when: on_fail
+          command: |
+            aws s3 rm  s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7}  --recursive
+            aws cloudformation delete-stack --stack-name "udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7}"
+            aws cloudformation delete-stack --stack-name "udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7}"
+            
+  revert-migrations:
+    description: Revert the last migration
+    parameters:
+        workflow_id:
+            type: string      
+            default: ${CIRCLE_WORKFLOW_ID:0:7}
+    steps:
+        - run:
+            name: Revert migrations
+            when: on_fail
+            command: |
+              curl -fsSL https://deb.nodesource.com/setup_13.x | sudo -E bash -
+              sudo apt install -y nodejs
+              # Your Memstash or kvdb.io GET URL code goes here
+              SUCCESS=$(curl --insecure  https://kvdb.io/6e9excdpTQFHDDubq22kEN/migration_${CIRCLE_WORKFLOW_ID:0:7})
+              # Logic for reverting the database state
+              if (( $SUCCESS == 1 ));
+              then
+                  cd ~/project/backend
+                  npm install
+                  npm run migration:revert
+              fi            
+
+
 # Define a job to be invoked later in a workflow.
 # See: https://circleci.com/docs/2.0/configuration-reference/#jobs
 jobs:
@@ -154,6 +196,8 @@ jobs:
             - project/.circleci/ansible/inventory.txt
       # Here's where you will add some code to rollback on failure     
 
+      - destroy_environment
+
 
 
 
@@ -183,7 +227,7 @@ jobs:
             cat inventory.txt
             ansible-playbook -i inventory.txt configure-server.yml
       # Here's where you will add some code to rollback on failure      
-
+      - destroy_environment
 
 
 
@@ -211,6 +255,8 @@ jobs:
                   curl https://kvdb.io/6e9excdpTQFHDDubq22kEN/migration_${CIRCLE_WORKFLOW_ID:0:7}  -d '1'
               fi
      # Here's where you will add some code to rollback on failure
+     - destroy_environment
+     - revert-migrations
      
 
 
@@ -223,15 +269,10 @@ jobs:
           name: Install dependencies
           command: |
             sudo apt install  tar gzip    unzip
-            #pip install pip  --upgrade 
-            #pip install  awscli 
-            #pip install ansible  
             curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
             unzip awscliv2.zip
             sudo ./aws/install
             aws --version
-
-
       - run:
           name: Get backend url
           command: |
@@ -246,24 +287,18 @@ jobs:
             cd frontend
             npm install
             npm run build
-
-            
             tar -czvf artifact-"${CIRCLE_WORKFLOW_ID:0:7}".tar.gz dist
             aws s3 cp dist s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7} --recursive
             #tar -czvf artifact-udapeople-4273fc1.tar.gz dist
             #aws s3 cp dist s3://udapeople-4273fc1 --recursive
-
-            
-
-
       # Here's where you will add some code to rollback on failure      
-
+     - destroy_environment
+     - revert-migrations
 
 
   deploy-backend:
     docker:
       - image: circleci/node:13.8.0
-
     steps:
       - checkout
       - add_ssh_keys:
@@ -274,11 +309,7 @@ jobs:
       - run:
           name: Install dependencies
           command: |
-            pwd
             sudo apt install  tar gzip    unzip
-            #pip install pip  --upgrade 
-            #pip install  awscli 
-            #pip install ansible  
             curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
             unzip awscliv2.zip
             sudo ./aws/install
@@ -309,7 +340,8 @@ jobs:
             cat inventory.txt
             ansible-playbook -i inventory.txt deploy-backend.yml
       # Here's where you will add some code to rollback on failure  
-
+     - destroy_environment
+     - revert-migrations
 
 
   smoke-test:
@@ -321,13 +353,9 @@ jobs:
           name: Install dependencies
           command: |
             sudo apt install  tar gzip    unzip
-            #pip install pip  --upgrade 
-            #pip install  awscli 
-            #pip install ansible  
             curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
             unzip awscliv2.zip
             sudo ./aws/install
-            aws --version
       - run:
           name: Get backend url
           command: |
@@ -358,7 +386,8 @@ jobs:
             fi
 
       # Here's where you will add some code to rollback on failure  
-
+     - destroy_environment
+     - revert-migrations
 
 # Invoke jobs via workflows
 # See: https://circleci.com/docs/2.0/configuration-reference/#workflows
@@ -381,14 +410,38 @@ workflows:
     #  - run-migrations
     #  - deploy-frontend
     #  - smoke-test
-      - deploy-backend    
+    #  - deploy-backend    
     #  - smoke-test:
     #     requires: [deploy-backend]
-      - smoke-test
+    #  - smoke-test
 
 
-
-
-
-
-#  - configure-infrastructure
+      - build-frontend
+      - build-backend
+      - test-frontend:
+          requires: [build-frontend]
+      - test-backend:
+          requires: [build-backend]
+      - scan-backend:
+          requires: [build-backend]
+      - scan-frontend:
+          requires: [build-frontend]
+      - deploy-infrastructure:
+          requires: [test-frontend, test-backend, scan-frontend, scan-backend]
+          # filters:
+          #   branches:
+          #     only: [test-feature-branch]
+      - configure-infrastructure:
+          requires: [deploy-infrastructure]
+      - run-migrations:
+          requires: [configure-infrastructure]
+      - deploy-frontend:
+          requires: [run-migrations]
+      - deploy-backend:
+          requires: [run-migrations]
+      - smoke-test:
+          requires: [deploy-backend, deploy-frontend]
+      # - cloudfront-update:
+      #     requires: [smoke-test]
+      # - cleanup:
+      #     requires: [cloudfront-update]
