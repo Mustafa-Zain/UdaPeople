@@ -10,10 +10,6 @@ commands:
   # Exercise - Rollback
   destroy_environment:
     steps:
-      - run: # Install the AWS CLI if it is not already included in the docker image
-          name: Install awscli
-          when: on_fail
-          command: pip install awscli
       - run:
           name: Destroy environment
           when: on_fail
@@ -116,8 +112,6 @@ jobs:
               cd backend
               npm install
               npm run test
-
-
 
   scan-frontend:
     docker:
@@ -319,29 +313,25 @@ jobs:
             python3 -m pip install --user ansible
             python3 -m pip -V
             ansible --version
-            
       - run:
           name: Deploy backend
           command: |
-            pwd
             cd backend
             npm i
             npm run build
             cd ..
-            pwd
             # Zip the directory
             tar -C backend -czf artifact.tar.gz .
             #cp artifact.tar.gz .circleci/ansible/roles/deploy/files
 
             cd .circleci/ansible
-            pwd
             aws ec2 describe-instances --query 'Reservations[*].Instances[*].PublicIpAddress'   --filters "Name=tag:project,Values=udapeople" --output text >> inventory.txt
             echo "Contents  of the inventory.txt file is -------"
             cat inventory.txt
             ansible-playbook -i inventory.txt deploy-backend.yml
       # Here's where you will add some code to rollback on failure  
-      - destroy_environment
-      - revert-migrations
+      #- destroy_environment
+      #- revert-migrations
 
 
   smoke-test:
@@ -410,38 +400,8 @@ workflows:
     #  - run-migrations
     #  - deploy-frontend
     #  - smoke-test
-    #  - deploy-backend    
+      - deploy-backend    
     #  - smoke-test:
     #     requires: [deploy-backend]
     #  - smoke-test
 
-
-      - build-frontend
-      - build-backend
-      - test-frontend:
-          requires: [build-frontend]
-      - test-backend:
-          requires: [build-backend]
-      - scan-backend:
-          requires: [build-backend]
-      - scan-frontend:
-          requires: [build-frontend]
-      - deploy-infrastructure:
-          requires: [test-frontend, test-backend, scan-frontend, scan-backend]
-          # filters:
-          #   branches:
-          #     only: [test-feature-branch]
-      - configure-infrastructure:
-          requires: [deploy-infrastructure]
-      - run-migrations:
-          requires: [configure-infrastructure]
-      - deploy-frontend:
-          requires: [run-migrations]
-      - deploy-backend:
-          requires: [run-migrations]
-      - smoke-test:
-          requires: [deploy-backend, deploy-frontend]
-      # - cloudfront-update:
-      #     requires: [smoke-test]
-      # - cleanup:
-      #     requires: [cloudfront-update]
