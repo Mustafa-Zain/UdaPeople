@@ -14,9 +14,9 @@ commands:
           name: Destroy environment
           when: on_fail
           command: |
-            aws s3 rm  s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7}  --recursive
-            aws cloudformation delete-stack --stack-name "udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7}"
-            aws cloudformation delete-stack --stack-name "udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7}"
+            #aws s3 rm  s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7}  --recursive
+            #aws cloudformation delete-stack --stack-name "udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7}"
+            #aws cloudformation delete-stack --stack-name "udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7}"
             
   revert-migrations:
     description: Revert the last migration
@@ -24,6 +24,7 @@ commands:
         workflow_id:
             type: string      
             default: ${CIRCLE_WORKFLOW_ID:0:7}
+            
     steps:
         - run:
             name: Revert migrations
@@ -36,9 +37,9 @@ commands:
               # Logic for reverting the database state
               if (( $SUCCESS == 1 ));
               then
-                  cd ~/project/backend
+                  cd backend
                   npm install
-                  npm run migration:revert
+                  #npm run migration:revert
               fi            
 
 
@@ -66,7 +67,7 @@ jobs:
 
   build-backend:
     docker:
-      - image: circleci/node:13.8.0
+      - image: cimg/node:13.8.0
     steps:
       - checkout
       - restore_cache:
@@ -76,7 +77,9 @@ jobs:
           command: |
              # Your code here
              cd backend
+             pwd
              npm install
+             echo "Before Build -----------------------------------"
              npm run build
              
       - save_cache:
@@ -400,8 +403,41 @@ workflows:
     #  - run-migrations
     #  - deploy-frontend
     #  - smoke-test
-      - deploy-backend    
+    #  - deploy-backend    
     #  - smoke-test:
     #     requires: [deploy-backend]
     #  - smoke-test
+
+
+
+
+      - build-frontend
+      - build-backend
+      - test-frontend:
+          requires: [build-frontend]
+      - test-backend:
+          requires: [build-backend]
+      - scan-backend:
+          requires: [build-backend]
+      - scan-frontend:
+          requires: [build-frontend]
+      - deploy-infrastructure:
+          requires: [test-frontend, test-backend, scan-frontend, scan-backend]
+          # filters:
+          #   branches:
+          #     only: [test-feature-branch]
+      - configure-infrastructure:
+          requires: [deploy-infrastructure]
+      - run-migrations:
+          requires: [configure-infrastructure]
+      - deploy-frontend:
+          requires: [run-migrations]
+      - deploy-backend:
+          requires: [run-migrations]
+      - smoke-test:
+          requires: [deploy-backend, deploy-frontend]
+      # - cloudfront-update:
+      #     requires: [smoke-test]
+      # - cleanup:
+      #     requires: [cloudfront-update]
 
