@@ -255,9 +255,9 @@ jobs:
                   curl https://kvdb.io/6e9excdpTQFHDDubq22kEN/migration_${CIRCLE_WORKFLOW_ID:0:7}  -d '1'
               fi
      # Here's where you will add some code to rollback on failure
-     - destroy_environment
-     - revert-migrations
-     
+      - destroy_environment
+      - revert-migrations
+      
 
 
   deploy-frontend:
@@ -292,8 +292,8 @@ jobs:
             #tar -czvf artifact-udapeople-4273fc1.tar.gz dist
             #aws s3 cp dist s3://udapeople-4273fc1 --recursive
       # Here's where you will add some code to rollback on failure      
-     - destroy_environment
-     - revert-migrations
+      - destroy_environment
+      - revert-migrations
 
 
   deploy-backend:
@@ -340,8 +340,8 @@ jobs:
             cat inventory.txt
             ansible-playbook -i inventory.txt deploy-backend.yml
       # Here's where you will add some code to rollback on failure  
-     - destroy_environment
-     - revert-migrations
+      - destroy_environment
+      - revert-migrations
 
 
   smoke-test:
@@ -386,8 +386,8 @@ jobs:
             fi
 
       # Here's where you will add some code to rollback on failure  
-     - destroy_environment
-     - revert-migrations
+      - destroy_environment
+      - revert-migrations
 
 # Invoke jobs via workflows
 # See: https://circleci.com/docs/2.0/configuration-reference/#workflows
