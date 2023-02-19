@@ -78,6 +78,7 @@ jobs:
              cd backend
              pwd
              npm install
+             echo "Before Build -----------------------------------"
              npm run build
              
       - save_cache:
