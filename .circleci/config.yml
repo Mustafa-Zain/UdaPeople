@@ -445,8 +445,7 @@ jobs:
             #Delete Old Stacks
             for wID in "${wIDs[@]}"
             do
-              #if [[ "$wID" != "${CIRCLE_WORKFLOW_ID:0:7}" ]]; then
-              if [[ "$wID" != "83d382a" ]]; then
+              if [[ "$wID" != "${CIRCLE_WORKFLOW_ID:0:7}" ]]; then
                 aws s3 rm  s3://udapeople-$wID  --recursive
                 aws cloudformation delete-stack --stack-name "udapeople-backend-$wID"
                 aws cloudformation delete-stack --stack-name "udapeople-frontend-$wID"
@@ -456,10 +455,38 @@ jobs:
 # Invoke jobs via workflows
 # See: https://circleci.com/docs/2.0/configuration-reference/#workflows
 workflows:
-  master:
+  default:
     jobs:
 
-      - cleanup
+      - build-frontend
+      - build-backend
+      - test-frontend:
+          requires: [build-frontend]
+      - test-backend:
+          requires: [build-backend]
+      - scan-backend:
+          requires: [build-backend]
+      - scan-frontend:
+          requires: [build-frontend]
+      - deploy-infrastructure:
+          requires: [test-frontend, test-backend, scan-frontend, scan-backend]
+          filters:
+            branches:
+              only: [master]
+      - configure-infrastructure:
+          requires: [deploy-infrastructure]
+      - run-migrations:
+          requires: [configure-infrastructure]
+      - deploy-frontend:
+          requires: [run-migrations]
+      - deploy-backend:
+          requires: [run-migrations]
+      - smoke-test:
+          requires: [deploy-backend, deploy-frontend]
+      - cloudfront-update:
+          requires: [smoke-test]
+      - cleanup:
+          requires: [cloudfront-update]
 
 
 
