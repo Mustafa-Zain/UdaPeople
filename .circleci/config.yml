@@ -445,8 +445,7 @@ jobs:
             #Delete Old Stacks
             for wID in "${wIDs[@]}"
             do
-              #if [[ "$wID" != "${CIRCLE_WORKFLOW_ID:0:7}" ]]; then
-              if [[ "$wID" != "83d382a" ]]; then
+              if [[ "$wID" != "${CIRCLE_WORKFLOW_ID:0:7}" ]]; then
                 aws s3 rm  s3://udapeople-$wID  --recursive
                 aws cloudformation delete-stack --stack-name "udapeople-backend-$wID"
                 aws cloudformation delete-stack --stack-name "udapeople-frontend-$wID"
