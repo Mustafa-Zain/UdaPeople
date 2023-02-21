@@ -32,13 +32,13 @@ commands:
               curl -fsSL https://deb.nodesource.com/setup_13.x | sudo -E bash -
               sudo apt install -y nodejs
               # Your Memstash or kvdb.io GET URL code goes here
-              SUCCESS=$(curl --insecure  https://kvdb.io/6e9excdpTQFHDDubq22kEN/migration_${CIRCLE_WORKFLOW_ID:0:7})
+              SUCCESS=$(curl --insecure  https://kvdb.io/6e9excdpTQFHDDubq22kEN/migration_${CIRCLE_WORKFLOW_ID:0:7} )
               # Logic for reverting the database state
               if (( $SUCCESS == 1 ));
               then
                   cd backend
                   npm install
-                  #npm run migration:revert
+                  npm run migration:revert
               fi            
 
 
@@ -261,6 +261,14 @@ jobs:
     steps:
       - checkout
       - run:
+          name: Install dependencies
+          command: |
+            sudo apt install  tar gzip    unzip
+            curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+            unzip awscliv2.zip
+            sudo ./aws/install
+            aws --version
+      - run:
           name: Run migrations
           command: |
               cd backend
@@ -276,7 +284,7 @@ jobs:
                   # If you are using memstash.io, generate the token "7933fe63-4687-4fa1-8426-aa25aa1730ec" on the website
                   # curl -H "Content-Type: text/plain" -H "token: 7933fe63-4687-4fa1-8426-aa25aa1730ec" --request PUT --data "1" https://api.memstash.io/values/migration_${CIRCLE_WORKFLOW_ID:0:7}
                   # If you are using kvdb.io, generate the bucket ID "9GE4jRtKznmVKRfvdBABBe" in your local terminal first
-                  curl https://kvdb.io/6e9excdpTQFHDDubq22kEN/migration_${CIRCLE_WORKFLOW_ID:0:7}  -d '1'
+                  curl https://kvdb.io/6e9excdpTQFHDDubq22kEN/migration_${CIRCLE_WORKFLOW_ID:0:7}  -d '1' -k
               fi
      # Here's where you will add some code to rollback on failure
       - destroy_environment
@@ -352,16 +360,12 @@ jobs:
             cd ..
             # Zip the directory
             tar -C backend -czf artifact.tar.gz .
-            #cp artifact.tar.gz .circleci/ansible/roles/deploy/files
-
             cd .circleci/ansible
-            #aws ec2 describe-instances --query 'Reservations[*].Instances[*].PublicIpAddress'   --filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7}" --output text >> inventory.txt
-            #echo "Contents  of the inventory.txt file is -------"
             cat ~/inventory.txt
             ansible-playbook -i ~/inventory.txt deploy-backend.yml
       # Here's where you will add some code to rollback on failure  
-      #- destroy_environment
-      #- revert-migrations
+      - destroy_environment
+      - revert-migrations
 
 
   smoke-test:
