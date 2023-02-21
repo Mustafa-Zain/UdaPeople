@@ -18,7 +18,7 @@
       - TYPEORM_ENTITIES: ./modules/domain/**/*.entity{.ts,.js}
       - TYPEORM_MIGRATIONS: ./migrations/.*ts
       - TYPEORM_MIGRATIONS_DIR: ./migrations
-      #- NODE_ENV: production 
+      - NODE_ENV: production 
       - VERSION: "1"
   roles:
     - deploy
