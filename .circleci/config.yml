@@ -225,7 +225,7 @@ jobs:
             ansible-playbook -i ~/inventory.txt configure-prometheus.yml
       # Here's where you will add some code to rollback on failure      
       - destroy_environment
-      
+       
   configure-infrastructure:
     docker:
       - image: python:3.10.4
@@ -415,7 +415,7 @@ jobs:
       - destroy_environment
       - revert-migrations
 
-      
+
   cloudfront-update:
     docker:
       - image: amazon/aws-cli
