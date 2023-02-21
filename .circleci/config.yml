@@ -183,13 +183,15 @@ jobs:
       - run:
           name: Add back-end ip to ansible inventory
           command: |
-            aws ec2 describe-instances --query 'Reservations[*].Instances[*].PublicIpAddress'   --filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7}" --output text >> inventory.txt
-            cat inventory.txt
+            touch ~/inventory.txt
+            echo "[web]" > ~/inventory.txt          
+            aws ec2 describe-instances --query 'Reservations[*].Instances[*].PublicIpAddress'   --filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7}" --output text >> ~/inventory.txt
+            cat ~/inventory.txt
             
       - persist_to_workspace:
           root: ~/
           paths:
-            - project/.circleci/ansible/inventory.txt
+            - inventory.txt
       # Here's where you will add some code to rollback on failure     
 
       - destroy_environment
@@ -197,6 +199,33 @@ jobs:
 
 
 
+  configure-node-explorer:
+    docker:
+      - image: python:3.10.4
+    steps:
+      - checkout
+      - add_ssh_keys:
+          fingerprints: ["ef:f1:47:5a:51:0a:dc:21:0e:4b:bb:16:a3:98:a5:36"] # You can get this ID in the section where you registered the SSH Key
+      - attach_workspace:
+          # Must be absolute path or relative path from working_directory
+          at: ~/
+      - run:
+          name: Install Ansible
+          command: |
+            apt install  tar gzip   
+            # Install Ansible
+            pip install pip  --upgrade 
+            pip install ansible awscli  
+                 
+      - run:
+          name: Configure server
+          command: |
+            cd .circleci/ansible/
+            cat ~/inventory.txt
+            ansible-playbook -i ~/inventory.txt configure-prometheus.yml
+      # Here's where you will add some code to rollback on failure      
+      - destroy_environment
+      
   configure-infrastructure:
     docker:
       - image: python:3.10.4
@@ -219,9 +248,8 @@ jobs:
           name: Configure server
           command: |
             cd .circleci/ansible/
-            #echo "54.144.133.70" >> inventory.txt
-            cat inventory.txt
-            ansible-playbook -i inventory.txt configure-server.yml
+            cat ~/inventory.txt
+            ansible-playbook -i ~/inventory.txt configure-server.yml
       # Here's where you will add some code to rollback on failure      
       - destroy_environment
 
@@ -327,10 +355,10 @@ jobs:
             #cp artifact.tar.gz .circleci/ansible/roles/deploy/files
 
             cd .circleci/ansible
-            aws ec2 describe-instances --query 'Reservations[*].Instances[*].PublicIpAddress'   --filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7}" --output text >> inventory.txt
-            echo "Contents  of the inventory.txt file is -------"
-            cat inventory.txt
-            ansible-playbook -i inventory.txt deploy-backend.yml
+            #aws ec2 describe-instances --query 'Reservations[*].Instances[*].PublicIpAddress'   --filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7}" --output text >> inventory.txt
+            #echo "Contents  of the inventory.txt file is -------"
+            cat ~/inventory.txt
+            ansible-playbook -i ~/inventory.txt deploy-backend.yml
       # Here's where you will add some code to rollback on failure  
       #- destroy_environment
       #- revert-migrations
@@ -475,8 +503,10 @@ workflows:
               only: [master]
       - configure-infrastructure:
           requires: [deploy-infrastructure]
-      - run-migrations:
+      - configure-node-explorer:
           requires: [configure-infrastructure]
+      - run-migrations:
+          requires: [configure-node-explorer]
       - deploy-frontend:
           requires: [run-migrations]
       - deploy-backend:
