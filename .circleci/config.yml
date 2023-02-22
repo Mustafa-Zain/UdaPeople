@@ -285,9 +285,9 @@ jobs:
               cd backend
               npm install
               # Run and save the migration output
-              ech0 "###   7   ###"
+              echo "###   7   ###"
               npm run migrations > migrations_dump.txt
-              ech0 "###   8   ###"
+              echo "###   8   ###"
               cat migrations_dump.txt
 
       - run:
