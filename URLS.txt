@@ -1,9 +1,0 @@
-[URL01] Public Url to GitHub repository (not private)
-https://github.com/Mustafa-Zain/UdaPeople
-
-[URL02] Public URL for your S3 Bucket (aka, your green candidate front-end)
-https://udapeople-4f309dc.s3.amazonaws.com/index.html#/employees
-
-
-[URL5]
-http://ec2-34-236-77-11.compute-1.amazonaws.com:9090/targets
