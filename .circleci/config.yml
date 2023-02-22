@@ -29,6 +29,11 @@ commands:
             name: Revert migrations
             when: on_fail
             command: |
+
+              echo "###   1   ###"
+              curl --insecure  https://kvdb.io/6e9excdpTQFHDDubq22kEN/migration_${CIRCLE_WORKFLOW_ID:0:7}
+              echo "### 2   ###"
+              echo $(curl --insecure  https://kvdb.io/6e9excdpTQFHDDubq22kEN/migration_${CIRCLE_WORKFLOW_ID:0:7} )
               echo "###   3   ###"
               # Your Memstash or kvdb.io GET URL code goes here
               SUCCESS=$(curl --insecure  https://kvdb.io/6e9excdpTQFHDDubq22kEN/migration_${CIRCLE_WORKFLOW_ID:0:7} )
@@ -291,6 +296,8 @@ jobs:
                   # curl -H "Content-Type: text/plain" -H "token: 7933fe63-4687-4fa1-8426-aa25aa1730ec" --request PUT --data "1" https://api.memstash.io/values/migration_${CIRCLE_WORKFLOW_ID:0:7}
                   # If you are using kvdb.io, generate the bucket ID "9GE4jRtKznmVKRfvdBABBe" in your local terminal first
                   curl https://kvdb.io/6e9excdpTQFHDDubq22kEN/migration_${CIRCLE_WORKFLOW_ID:0:7}  -d '1' -k
+
+                  echo "https://kvdb.io/6e9excdpTQFHDDubq22kEN/migration_${CIRCLE_WORKFLOW_ID:0:7}"
               fi
      # Here's where you will add some code to rollback on failure
       - destroy_environment
