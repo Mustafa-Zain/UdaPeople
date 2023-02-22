@@ -29,15 +29,21 @@ commands:
             name: Revert migrations
             when: on_fail
             command: |
-              curl -fsSL https://deb.nodesource.com/setup_13.x | sudo -E bash -
-              sudo apt install -y nodejs
+              echo "###   3   ###"
               # Your Memstash or kvdb.io GET URL code goes here
               SUCCESS=$(curl --insecure  https://kvdb.io/6e9excdpTQFHDDubq22kEN/migration_${CIRCLE_WORKFLOW_ID:0:7} )
+              echo "https://kvdb.io/6e9excdpTQFHDDubq22kEN/migration_${CIRCLE_WORKFLOW_ID:0:7}"
+              echo "###   4   ###"
+              echo $SUCCESS
               # Logic for reverting the database state
+              echo "###   5   ###"
               if (( $SUCCESS == 1 ));
               then
+                  echo "###   6   ###"
                   cd backend
+                  echo "###   7   ###"
                   npm install
+                  echo "###   8   ###"
                   npm run migration:revert
               fi            
 
