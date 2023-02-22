@@ -340,7 +340,6 @@ jobs:
       - destroy_environment
       - revert-migrations
 
-
   deploy-backend:
     docker:
       - image: circleci/node:13.8.0
