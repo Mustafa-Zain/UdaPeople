@@ -274,15 +274,12 @@ jobs:
       - run:
           name: Install dependencies
           command: |
-            sudo apt install  tar gzip    unzip
-            curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
-            unzip awscliv2.zip
-            sudo ./aws/install
-            aws --version
+            sudo apt-get update && sudo apt-get install -y awscli
       - run:
           name: Run migrations
           command: |
               cd backend
+              pwd
               npm install
               # Run and save the migration output
               echo "###   7   ###"
