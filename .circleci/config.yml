@@ -282,9 +282,7 @@ jobs:
               pwd
               npm install
               # Run and save the migration output
-              echo "###   7   ###"
               npm run migrations > migrations_dump.txt
-              echo "###   8   ###"
               cat migrations_dump.txt
 
       - run:
